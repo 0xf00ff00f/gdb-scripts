@@ -10,6 +10,9 @@ class QStringPrinter:
         data = d.cast(char_type.pointer()) + d['offset']
         return data.string(encoding = 'UTF-16', length = d['size'] * 2)
 
+    def display_hint(self):
+        return 'string'
+
 class QVectorPrinter:
     class _iterator:
         def __init__(self, data, size):
@@ -21,7 +24,7 @@ class QVectorPrinter:
             return self
 
         def __next__(self):
-            if self.index >= self.size:
+            if self.index == self.size:
                 raise StopIteration
             index = self.index
             self.index += 1
@@ -41,6 +44,9 @@ class QVectorPrinter:
         data = (d.cast(char_type.pointer()) + d['offset']).cast(self.value_type.pointer())
         return self._iterator(data, d['size'])
 
+    def display_hint(self):
+        return 'array'
+
 class QListPrinter:
     class _iterator:
         def __init__(self, data, value_type, size):
@@ -53,7 +59,7 @@ class QListPrinter:
             return self
 
         def __next__(self):
-            if self.index >= self.size:
+            if self.index == self.size:
                 raise StopIteration
             index = self.index
             self.index += 1
@@ -80,6 +86,9 @@ class QListPrinter:
         data = d['array'].cast(void_type.pointer().pointer()) + d['begin']
         size = d['end'] - d['begin']
         return self._iterator(data, self.value_type, size)
+
+    def display_hint(self):
+        return 'array'
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter('Qt5')
